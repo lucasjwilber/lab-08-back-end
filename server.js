@@ -5,10 +5,13 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const superagent = require('superagent');
+const pg = require('pg');
 
 app.use(cors());
 
 const PORT = process.env.PORT || 3003;
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', err => {throw err;});
 
 app.get('/location', handleLocation);
 app.get('/weather', handleWeather);
@@ -133,7 +136,7 @@ function Trail(obj) {
 
 function handleError(request, response) {
   response.status(404).send('Server connection problem');
-};
+}
 
 app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
 
