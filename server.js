@@ -138,9 +138,12 @@ function handleError(request, response) {
   response.status(404).send('Server connection problem');
 }
 
-// function Error(error, response) {
-//   console.error(error);
-//   return response.status(500).send('Sorry, there is a temporary problem.Please try it later.');
-// }
-
 app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
+
+client.connect()
+  .then( () => {
+    console.log('connected to db');
+  })
+  .catch( err => {
+    console.log('did not connect to db');
+  });
