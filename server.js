@@ -68,7 +68,7 @@ function handleWeather(request, response) {
     superagent.get(url)
       .then(resultsFromSuperagent => {
         let daysOfWeather = resultsFromSuperagent.body.daily.data;
-        console.log(daysOfWeather);
+        //console.log(daysOfWeather);
         let weatherArray = daysOfWeather.map(day => {
           return new Weather(day);
         });
@@ -80,19 +80,19 @@ function handleWeather(request, response) {
         console.error(error);
         response.status(500).send('server error.');
       });
-  };
+  }
 };
 
 function Weather(day) {
   this.forecast = day.summary;
-  this.time = new Date(day.time).toDateString();
+  this.time = new Date(day.time * 1000).toDateString();
 }
 
 
 function handleTrails(request, response) {
-  const trail = request.query.data;
-  console.log(`trail: ${trail}`);
-  const url = `https://www.hikingproject.com/data/get-trails?lat=40.0274&lon=-105.2519&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+  const locationObj = request.query.data;
+  //console.log(`trail: ${trail}`);
+  const url =`https://www.hikingproject.com/data/get-trails?lat=${locationObj.latitude}&lon=${locationObj.longitude}&key=${process.env.TRAIL_API_KEY}`;
 
 
   if (storedUrls[url]) {
@@ -102,15 +102,11 @@ function handleTrails(request, response) {
     console.log('making the api call to trails');
     superagent.get(url)
       .then(resultsFromSuperagent => {
-        let trailsArr = resultsFromSuperagent.body.trails;
-        console.log(trailsArr);
-        let returnedTrailObjs = [];
-        trailsArr.forEach(obj => {
-          returnedTrailObjs.push(new Trail(obj));
-        });
-        console.log(returnedTrailObjs);
-        storedUrls[url] = returnedTrailObjs;
-        response.status(200).send(returnedTrailObjs);
+        let trailsArr = resultsFromSuperagent.body.trails.map(prop => {
+          return new Trail(prop);
+        })
+        //storedUrls[url] = trailsArr;
+        response.status(200).send(trailsArr);
 
       })
       .catch((error) => {
@@ -135,17 +131,15 @@ function Trail(obj) {
   this.condition_time = obj.conditionDate.split(' ')[1];
 }
 
-
 function handleError(request, response) {
   response.status(404).send('Server connection problem');
 }
 
-app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
-
 client.connect()
-  .then( () => {
+  .then(() => {
     console.log('connected to db');
+    app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
   })
-  .catch( err => {
-    console.log('did not connect to db');
-  });
+  .catch(err => {
+    throw `PG Startup Error: ${err.message}`;
+  })
