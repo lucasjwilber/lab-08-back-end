@@ -129,6 +129,7 @@ function Trail(obj) {
   this.summary = obj.summary;
   this.trail_url = obj.trail_url;
   this.conditions = obj.conditionStatus;
+  //API returns a full string but the front end requires that string to be split up:
   this.condition_date = obj.conditionDate.split(' ')[0];
   this.condition_time = obj.conditionDate.split(' ')[1];
 }
