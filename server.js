@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 3003;
 const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => {throw err;});
 
+//routes:
 app.get('/location', handleLocation);
 app.get('/weather', handleWeather);
 app.get('/trails', handleTrails);
@@ -28,7 +29,7 @@ function handleLocation(request, response) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=${process.env.GEOCODE_API_KEY}`;
 
   if (storedUrls[url]) {
-    console.log('using cached url');
+    console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to geocode');
@@ -60,7 +61,7 @@ function handleWeather(request, response) {
   const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${locationObj.latitude},${locationObj.longitude}`;
 
   if (storedUrls[url]) {
-    console.log('using cached url');
+    console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to darksky');
@@ -95,7 +96,7 @@ function handleTrails(request, response) {
 
 
   if (storedUrls[url]) {
-    console.log('using cached url');
+    console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to trails');
@@ -129,6 +130,7 @@ function Trail(obj) {
   this.summary = obj.summary;
   this.trail_url = obj.trail_url;
   this.conditions = obj.conditionStatus;
+  //API returns a full string but the front end requires that string to be split up:
   this.condition_date = obj.conditionDate.split(' ')[0];
   this.condition_time = obj.conditionDate.split(' ')[1];
 }
