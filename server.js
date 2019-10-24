@@ -11,7 +11,7 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3003;
 const client = new pg.Client(process.env.DATABASE_URL);
-client.on('error', err => {throw err;});
+client.on('error', err => { throw err; });
 
 //routes:
 app.get('/location', handleLocation);
@@ -29,17 +29,48 @@ function handleLocation(request, response) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=${process.env.GEOCODE_API_KEY}`;
 
   if (storedUrls[url]) {
-    console.log('using cached url', storedUrls[url]);
+    // console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to geocode');
     superagent.get(url)
       .then(resultsFromSuperagent => {
         const locationObject = new Location(location, resultsFromSuperagent.body.results[0]);
-        storedUrls[url] = locationObject;
+
+        let geoDataResults = resultsFromSuperagent.body.results[0];
+
+        let SQL = 'INSERT INTO geocode (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING *';
+
+
+        let safeValues = [location, geoDataResults.formatted_address, geoDataResults.geometry.location.lat, geoDataResults.geometry.location.lng];
+
+        client.query(SQL, safeValues)
+          .then(results => {
+            console.log('adding a row to the table');
+            console.log(results);
+
+            let queryResults = 'SELECT search_query FROM geocode WHERE search_query=$1';
+
+            client.query(queryResults, ['paris'])
+              .then(results => {
+                console.log('results of the query====================================================================================================================================================================');
+                console.log(results);
+              });
+
+            response.status(200).send(results);
+
+          })
+          .catch((error) => {
+            console.error(error);
+            response.status(500).send('error getting database info');
+          });
+
+
         response.status(200).send(locationObject);
         console.log('done using superagent for geocode');
+
       })
+
       .catch((error) => {
         console.error(error);
         response.status(500).send('server error.');
@@ -61,7 +92,7 @@ function handleWeather(request, response) {
   const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${locationObj.latitude},${locationObj.longitude}`;
 
   if (storedUrls[url]) {
-    console.log('using cached url', storedUrls[url]);
+    // console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to darksky');
@@ -92,11 +123,11 @@ function Weather(day) {
 function handleTrails(request, response) {
   const locationObj = request.query.data;
   //console.log(`trail: ${trail}`);
-  const url =`https://www.hikingproject.com/data/get-trails?lat=${locationObj.latitude}&lon=${locationObj.longitude}&key=${process.env.TRAIL_API_KEY}`;
+  const url = `https://www.hikingproject.com/data/get-trails?lat=${locationObj.latitude}&lon=${locationObj.longitude}&key=${process.env.TRAILS_API_KEY}`;
 
 
   if (storedUrls[url]) {
-    console.log('using cached url', storedUrls[url]);
+    // console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to trails');
