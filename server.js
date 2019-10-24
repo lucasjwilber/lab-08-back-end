@@ -105,7 +105,7 @@ function handleWeather(request, response) {
         response.status(500).send('server error.');
       });
   }
-};
+}
 
 function Weather(day) {
   this.forecast = day.summary;
