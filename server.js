@@ -28,7 +28,7 @@ function handleLocation(request, response) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=${process.env.GEOCODE_API_KEY}`;
 
   if (storedUrls[url]) {
-    console.log('using cached url');
+    console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to geocode');
@@ -60,7 +60,7 @@ function handleWeather(request, response) {
   const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${locationObj.latitude},${locationObj.longitude}`;
 
   if (storedUrls[url]) {
-    console.log('using cached url');
+    console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to darksky');
@@ -95,7 +95,7 @@ function handleTrails(request, response) {
 
 
   if (storedUrls[url]) {
-    console.log('using cached url');
+    console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to trails');
