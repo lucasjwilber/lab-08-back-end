@@ -79,7 +79,7 @@ function handleWeather(request, response) {
         console.error(error);
         response.status(500).send('server error.');
       });
-  };
+  }
 };
 
 function Weather(day) {
@@ -133,17 +133,15 @@ function Trail(obj) {
   this.condition_time = obj.conditionDate.split(' ')[1];
 }
 
-
 function handleError(request, response) {
   response.status(404).send('Server connection problem');
 }
 
-app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
-
 client.connect()
-  .then( () => {
+  .then(() => {
     console.log('connected to db');
+    app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
   })
-  .catch( err => {
-    console.log('did not connect to db');
-  });
+  .catch(err => {
+    throw `PG Startup Error: ${err.message}`;
+  })

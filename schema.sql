@@ -1,5 +1,3 @@
-DROP TABLE People;
-
 CREATE TABLE IF NOT EXISTS People(
   id SERIAL PRIMARY KEY,
   first_name VARCHAR(255),
