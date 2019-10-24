@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 3003;
 const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => {throw err;});
 
+//routes:
 app.get('/location', handleLocation);
 app.get('/weather', handleWeather);
 app.get('/trails', handleTrails);
