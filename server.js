@@ -46,21 +46,13 @@ function handleLocation(request, response) {
             let SQL = 'INSERT INTO geocode (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING *';
             let safeValues = [location, geoDataResults.formatted_address, geoDataResults.geometry.location.lat, geoDataResults.geometry.location.lng];
 
-            client.query(SQL, safeValues)
-              .then(results => {
-                console.log('adding a row to the table');
-                console.log(results);
-                response.status(200).send(results);
-              })
-              .catch(error => {
-                console.error(error);
-              });
+            client.query(SQL, safeValues);
+            response.status(200).send(locationObject);
           })
           .catch(error => {
             console.error(error);
           });
       } else {
-
         //else, if it is, use the data from the db
         let SQL = 'SELECT * FROM geocode WHERE search_query=$1';
         client.query(SQL, [location])
@@ -71,70 +63,13 @@ function handleLocation(request, response) {
           .catch(error => {
             console.error(error);
           });
-
-
       }
     })
     .catch((error) => {
       console.error(error);
       response.status(500).send('server error.');
     });
-
 }
-
-//////////////////////////////////////////////////////////////////////////////////
-
-
-
-// if (storedUrls[url]) {
-//   // console.log('using cached url', storedUrls[url]);
-//   response.send(storedUrls[url]);
-// } else {
-//   console.log('making the api call to geocode');
-//   superagent.get(url)
-//     .then(resultsFromSuperagent => {
-//       const locationObject = new Location(location, resultsFromSuperagent.body.results[0]);
-
-//       let geoDataResults = resultsFromSuperagent.body.results[0];
-
-//       let SQL = 'INSERT INTO geocode (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING *';
-
-
-//       let safeValues = [location, geoDataResults.formatted_address, geoDataResults.geometry.location.lat, geoDataResults.geometry.location.lng];
-
-//       client.query(SQL, safeValues)
-//         .then(results => {
-//           console.log('adding a row to the table');
-//           console.log(results);
-
-//           let queryResults = 'SELECT search_query FROM geocode WHERE search_query=$1';
-
-//           client.query(queryResults, ['paris'])
-//             .then(results => {
-//               console.log('results of the query====================================================================================================================================================================');
-//               console.log(results);
-//             });
-
-//           response.status(200).send(results);
-
-//         })
-//         .catch((error) => {
-//           console.error(error);
-//           response.status(500).send('error getting database info');
-//         });
-
-
-//       response.status(200).send(locationObject);
-//       console.log('done using superagent for geocode');
-
-//     })
-
-//     .catch((error) => {
-//       console.error(error);
-//       response.status(500).send('server error.');
-//     });
-// }
-
 
 function Location(location, geoData) {
   this.search_query = location;
