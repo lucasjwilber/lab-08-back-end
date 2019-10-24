@@ -1,10 +1,12 @@
-CREATE TABLE IF NOT EXISTS People(
+CREATE TABLE IF NOT EXISTS geocode(
   id SERIAL PRIMARY KEY,
-  first_name VARCHAR(255),
-  last_name VARCHAR(255)
+  city_name VARCHAR(255),
+  city_address VARCHAR(255),
+  latitude FLOAT,
+  longitude FLOAT
 );
 
-INSERT INTO People (first_name, last_name) VALUES ('Lucas', 'Wilber');
-INSERT INTO People (first_name, last_name) VALUES ('Bob', 'Marley');
+-- INSERT INTO People (first_name, last_name) VALUES ('Lucas', 'Wilber');
+-- INSERT INTO People (first_name, last_name) VALUES ('Bob', 'Marley');
 
-SELECT * FROM People;
+SELECT * FROM geocode;
