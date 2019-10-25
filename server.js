@@ -1,17 +1,22 @@
 'use strict';
 
+//libraries:
 const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
 const app = express();
+require('dotenv').config();
 const superagent = require('superagent');
 const pg = require('pg');
-
-
+const cors = require('cors');
 app.use(cors());
+
+//imports:
+
+const Weather = require('./modules/weather.js');
+
 
 const PORT = process.env.PORT || 3003;
 const client = new pg.Client(process.env.DATABASE_URL);
+
 client.on('error', err => { throw err; });
 
 
@@ -85,13 +90,14 @@ function Location(location, geoData) {
 }
 
 
+
+
 function handleWeather(request, response) {
   const locationObj = request.query.data;
 
   const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${locationObj.latitude},${locationObj.longitude}`;
 
   if (storedUrls[url]) {
-    // console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to darksky');
@@ -113,20 +119,14 @@ function handleWeather(request, response) {
   }
 };
 
-function Weather(day) {
-  this.forecast = day.summary;
-  this.time = new Date(day.time * 1000).toDateString();
-}
 
 
 function handleTrails(request, response) {
   const locationObj = request.query.data;
-  //console.log(`trail: ${trail}`);
   const url = `https://www.hikingproject.com/data/get-trails?lat=${locationObj.latitude}&lon=${locationObj.longitude}&key=${process.env.TRAILS_API_KEY}`;
 
 
   if (storedUrls[url]) {
-    // console.log('using cached url', storedUrls[url]);
     response.send(storedUrls[url]);
   } else {
     console.log('making the api call to trails');
@@ -223,10 +223,7 @@ function handleYelp(request, response) {
     superagent.get(url)
       .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
       .then(resultsFromSuperagent => {
-        console.log(resultsFromSuperagent.body);
         let yelpResults = resultsFromSuperagent.body.businesses;
-
-
 
         response.status(200).send(yelpResults);
         console.log('done calling the yelp API');
@@ -237,13 +234,6 @@ function handleYelp(request, response) {
       });
   }
 }
-
-
-// function Restaurant(obj) {
-//   this.name = obj.name;
-//   this.image_url = obj.
-// }
-
 
 
 

@@ -70,6 +70,36 @@ Estimate of time needed to complete: 30 minutes
 
 Start time: 10:18
 
+Finish time: 10:51
+
+Actual time needed to complete: 33 minutes
+
+**Number and name of feature: Movies DB**
+
+Estimate of time needed to complete: 30 minutes
+
+Start time: 10:18
+
+Finish time: 10:51
+
+Actual time needed to complete: 33 minutes
+
+**Number and name of feature: Yelp**
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 10:55
+
+Finish time: 11:50
+
+Actual time needed to complete: 55 minutes
+
+**Number and name of feature: Refactoring**
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 1:00
+
 Finish time: 
 
 Actual time needed to complete: 

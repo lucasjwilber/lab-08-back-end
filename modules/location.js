@@ -1,39 +1,29 @@
 'use strict';
 
-const location = {};
-const server = require('./server.js');
-
-const express = require('express');
-const app = express();
-require('dotenv').config();
-const superagent = require('superagent');
-const pg = require('pg');
-const client = new pg.Client(process.env.DATABASE_URL);
+console.log('start of location.js');
+//libraries:
 
 
 
 
-function Location(location, geoData) {
-  this.search_query = location;
-  this.formatted_query = geoData.formatted_address;
-  this.latitude = geoData.geometry.location.lat;
-  this.longitude = geoData.geometry.location.lng;
-}
 
-location.handleLocation = function (request, response) {
+module.exports.handleLocation = function (request, response) {
+
+
   const location = request.query.data;
 
-  function Location(location, geoData) {
-    this.search_query = location;
-    this.formatted_query = geoData.formatted_address;
-    this.latitude = geoData.geometry.location.lat;
-    this.longitude = geoData.geometry.location.lng;
-  }
 
-  ///////////////////////////////////////////////
+  // const Location = function (location, geoData) {
+  //   this.search_query = location;
+  //   this.formatted_query = geoData.formatted_address;
+  //   this.latitude = geoData.geometry.location.lat;
+  //   this.longitude = geoData.geometry.location.lng;
+  // };
+
 
   //query db to see if location is in the table:
   client.query('SELECT search_query FROM geocode WHERE search_query=$1', [location])
+
     .then(results => {
 
       //if it's not, make the api call and add the data to the table:
@@ -72,6 +62,4 @@ location.handleLocation = function (request, response) {
       console.error(error);
       response.status(500).send('server error.');
     });
-}
-
-module.exports = location;
+};
