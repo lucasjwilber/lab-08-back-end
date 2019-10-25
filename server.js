@@ -7,17 +7,23 @@ const app = express();
 const superagent = require('superagent');
 const pg = require('pg');
 
+
 app.use(cors());
 
 const PORT = process.env.PORT || 3003;
 const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => { throw err; });
 
+
+
 //routes:
 app.get('/location', handleLocation);
 app.get('/weather', handleWeather);
 app.get('/trails', handleTrails);
+app.get('/movies', handleMovies);
 app.get('*', handleError);
+
+
 
 
 //cached data:
@@ -27,7 +33,6 @@ let storedUrls = {};
 function handleLocation(request, response) {
   const location = request.query.data;
 
-  ///////////////////////////////////////////////
 
   //query db to see if location is in the table:
   client.query('SELECT search_query FROM geocode WHERE search_query=$1', [location])
@@ -158,6 +163,51 @@ function Trail(obj) {
 function handleError(request, response) {
   response.status(404).send('Server connection problem');
 }
+
+
+function handleMovies(request, response) {
+  const location = request.query.data.search_query;
+  console.log(location);
+
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.THEMOVIEDB_API_KEY}&query=${location}`;
+
+  if (storedUrls[url]) {
+    // console.log('using cached url', storedUrls[url]);
+    response.send(storedUrls[url]);
+  } else {
+    console.log('making the api call to themoviedb');
+    superagent.get(url)
+      .then(resultsFromSuperagent => {
+        let topMovies = resultsFromSuperagent.body.results;
+        topMovies = topMovies.sort((a, b) => {
+          if (a.popularity < b.popularity) { return 1; }
+          else if (a.popularity > b.popularity) { return -1; }
+          else { return 0; }
+        });
+        let movieResults = [];
+        topMovies.forEach(movie => {
+          movieResults.push(new Movie(movie));
+        });
+        response.status(200).send(movieResults);
+        console.log('done calling the movie db API');
+      })
+      .catch((error) => {
+        console.error(error);
+        response.status(500).send('server error.');
+      });
+  }
+};
+
+function Movie(obj) {
+  this.title = obj.title;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = obj.post_path;
+  this.popularity = obj.popularity;
+  this.released_on = obj.release_date;
+}
+
 
 client.connect()
   .then(() => {
