@@ -21,6 +21,7 @@ app.get('/location', handleLocation);
 app.get('/weather', handleWeather);
 app.get('/trails', handleTrails);
 app.get('/movies', handleMovies);
+app.get('/yelp', handleYelp);
 app.get('*', handleError);
 
 
@@ -203,10 +204,48 @@ function Movie(obj) {
   this.overview = obj.overview;
   this.average_votes = obj.vote_average;
   this.total_votes = obj.vote_count;
-  this.image_url = obj.post_path;
+  this.image_url = `https://s3-media3.fl.yelpcdn.com/bphoto/${obj.poster_path}`;
   this.popularity = obj.popularity;
   this.released_on = obj.release_date;
 }
+
+
+function handleYelp(request, response) {
+  const location = request.query.data.search_query;
+
+  const url = `https://api.yelp.com/v3/businesses/search?location=${location}`;
+
+  if (storedUrls[url]) {
+    // console.log('using cached url', storedUrls[url]);
+    response.send(storedUrls[url]);
+  } else {
+    console.log('making the api call to yelp');
+    superagent.get(url)
+      .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+      .then(resultsFromSuperagent => {
+        console.log(resultsFromSuperagent.body);
+        let yelpResults = resultsFromSuperagent.body.businesses;
+
+
+
+        response.status(200).send(yelpResults);
+        console.log('done calling the yelp API');
+      })
+      .catch((error) => {
+        console.error(error);
+        response.status(500).send('server error.');
+      });
+  }
+}
+
+
+// function Restaurant(obj) {
+//   this.name = obj.name;
+//   this.image_url = obj.
+// }
+
+
+
 
 
 client.connect()
@@ -216,4 +255,4 @@ client.connect()
   })
   .catch(err => {
     throw `PG Startup Error: ${err.message}`;
-  })
+  });
