@@ -164,20 +164,6 @@ function handleError(request, response) {
   response.status(404).send('Server connection problem');
 }
 
-client.connect()
-  .then(() => {
-    console.log('connected to db');
-    app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
-  })
-  .catch(err => {
-    throw `PG Startup Error: ${err.message}`;
-  })
-
-
-
-
-
-
 
 function handleMovies(request, response) {
   const location = request.query.data.search_query;
@@ -221,3 +207,13 @@ function Movie(obj) {
   this.popularity = obj.popularity;
   this.released_on = obj.release_date;
 }
+
+
+client.connect()
+  .then(() => {
+    console.log('connected to db');
+    app.listen(PORT, () => console.log(`app is listening on ${PORT}`));
+  })
+  .catch(err => {
+    throw `PG Startup Error: ${err.message}`;
+  })
