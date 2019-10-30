@@ -5,17 +5,17 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 const superagent = require('superagent');
-const pg = require('pg');
 const cors = require('cors');
 app.use(cors());
+const client = require('./modules/client.js');
 
 //imports:
+const handleLocation = require('./modules/location.js');
 
 const Weather = require('./modules/weather.js');
 
 
 const PORT = process.env.PORT || 3003;
-const client = new pg.Client(process.env.DATABASE_URL);
 
 client.on('error', err => { throw err; });
 
@@ -36,58 +36,58 @@ app.get('*', handleError);
 let storedUrls = {};
 
 
-function handleLocation(request, response) {
-  const location = request.query.data;
+// function handleLocation(request, response) {
+//   const location = request.query.data;
 
 
-  //query db to see if location is in the table:
-  client.query('SELECT search_query FROM geocode WHERE search_query=$1', [location])
-    .then(results => {
+//   //query db to see if location is in the table:
+//   client.query('SELECT search_query FROM geocode WHERE search_query=$1', [location])
+//     .then(results => {
 
-      //if it's not, make the api call and add the data to the table:
-      if (results.rowCount === 0) {
+//       //if it's not, make the api call and add the data to the table:
+//       if (results.rowCount === 0) {
 
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=${process.env.GEOCODE_API_KEY}`;
+//         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=${process.env.GEOCODE_API_KEY}`;
 
-        console.log('making the api call to geocode');
-        superagent.get(url)
-          .then(resultsFromSuperagent => {
-            const locationObject = new Location(location, resultsFromSuperagent.body.results[0]);
-            let geoDataResults = resultsFromSuperagent.body.results[0];
-            let SQL = 'INSERT INTO geocode (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING *';
-            let safeValues = [location, geoDataResults.formatted_address, geoDataResults.geometry.location.lat, geoDataResults.geometry.location.lng];
+//         console.log('making the api call to geocode');
+//         superagent.get(url)
+//           .then(resultsFromSuperagent => {
+//             const locationObject = new Location(location, resultsFromSuperagent.body.results[0]);
+//             let geoDataResults = resultsFromSuperagent.body.results[0];
+//             let SQL = 'INSERT INTO geocode (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING *';
+//             let safeValues = [location, geoDataResults.formatted_address, geoDataResults.geometry.location.lat, geoDataResults.geometry.location.lng];
 
-            client.query(SQL, safeValues);
-            response.status(200).send(locationObject);
-          })
-          .catch(error => {
-            console.error(error);
-          });
-      } else {
-        //else, if it is, use the data from the db
-        let SQL = 'SELECT * FROM geocode WHERE search_query=$1';
-        client.query(SQL, [location])
-          .then(results => {
-            let locationObj = results.rows[0];
-            response.status(200).send(locationObj);
-          })
-          .catch(error => {
-            console.error(error);
-          });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      response.status(500).send('server error.');
-    });
-}
+//             client.query(SQL, safeValues);
+//             response.status(200).send(locationObject);
+//           })
+//           .catch(error => {
+//             console.error(error);
+//           });
+//       } else {
+//         //else, if it is, use the data from the db
+//         let SQL = 'SELECT * FROM geocode WHERE search_query=$1';
+//         client.query(SQL, [location])
+//           .then(results => {
+//             let locationObj = results.rows[0];
+//             response.status(200).send(locationObj);
+//           })
+//           .catch(error => {
+//             console.error(error);
+//           });
+//       }
+//     })
+//     .catch((error) => {
+//       console.error(error);
+//       response.status(500).send('server error.');
+//     });
+// }
 
-function Location(location, geoData) {
-  this.search_query = location;
-  this.formatted_query = geoData.formatted_address;
-  this.latitude = geoData.geometry.location.lat;
-  this.longitude = geoData.geometry.location.lng;
-}
+// function Location(location, geoData) {
+//   this.search_query = location;
+//   this.formatted_query = geoData.formatted_address;
+//   this.latitude = geoData.geometry.location.lat;
+//   this.longitude = geoData.geometry.location.lng;
+// }
 
 
 
@@ -95,7 +95,7 @@ function Location(location, geoData) {
 function handleWeather(request, response) {
   const locationObj = request.query.data;
 
-  const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${locationObj.latitude},${locationObj.longitude}`;
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationObj.latitude},${locationObj.longitude}`;
 
   if (storedUrls[url]) {
     response.send(storedUrls[url]);
@@ -170,7 +170,7 @@ function handleMovies(request, response) {
   const location = request.query.data.search_query;
   console.log(location);
 
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.THEMOVIEDB_API_KEY}&query=${location}`;
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${location}`;
 
   if (storedUrls[url]) {
     // console.log('using cached url', storedUrls[url]);
